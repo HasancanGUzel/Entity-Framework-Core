@@ -7,5 +7,5 @@ build_property.InvariantGlobalization =
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
-build_property.RootNamespace = Veri_Ekleme
-build_property.ProjectDir = c:\Users\HASAN\Documents\GitHub\Entity-Framework-Core\Veri_Ekleme\
+build_property.RootNamespace = Veri_Guncelleme
+build_property.ProjectDir = c:\Users\HASAN\Documents\GitHub\Entity-Framework-Core\Veri_Guncelleme\

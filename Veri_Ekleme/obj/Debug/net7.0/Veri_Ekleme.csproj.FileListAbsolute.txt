@@ -1,5 +1,0 @@
-C:\Users\HASAN\Documents\GitHub\Uygulama_Çalışma\Entity Framework\Veri_Ekleme\obj\Debug\net7.0\Veri_Ekleme.csproj.AssemblyReference.cache
-C:\Users\HASAN\Documents\GitHub\Uygulama_Çalışma\Entity Framework\Veri_Ekleme\obj\Debug\net7.0\Veri_Ekleme.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\HASAN\Documents\GitHub\Uygulama_Çalışma\Entity Framework\Veri_Ekleme\obj\Debug\net7.0\Veri_Ekleme.AssemblyInfoInputs.cache
-C:\Users\HASAN\Documents\GitHub\Uygulama_Çalışma\Entity Framework\Veri_Ekleme\obj\Debug\net7.0\Veri_Ekleme.AssemblyInfo.cs
-C:\Users\HASAN\Documents\GitHub\Uygulama_Çalışma\Entity Framework\Veri_Ekleme\obj\Debug\net7.0\Veri_Ekleme.csproj.CoreCompileInputs.cache
