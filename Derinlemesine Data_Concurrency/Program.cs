@@ -1,0 +1,108 @@
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Derinlemesine_Data_Concurrency;
+class Program
+{
+      static ApplicationDbContext context = new();
+
+    static void Main(string[] args)
+    {
+        #region Data Concurrency Nedir?
+        //*Geliştirdiğimiz uygulamalarda ister istemez verisel olarak tutarsızlıklar meydana gelebilmektedir. Örneğin; birden fazla uygulamanın yahut client'ın aynı veritabanı üzerinde eşzamanı olarak çalıltığı durumlarda verisel anlamda uyuglamadan uygulamaya yahut client'tan clienta tutarsızlıklar meydana gelebilir.
+        //*Data Concurrency kavramı, uygulamalardaki veri tutarsızlığı durumlarına karşılık yönetilebilirliği sağlayacak olan davranışları kapsayan bir kavramdır.
+
+        //*Bir uygulamada veri tutarsızlığının olması demek o uygulamayı kullanan kullanıcıları yanıltmak demektir.
+        //*Veri tutarsızlığının olduğu uygulamalarda istatistiksel olarak yanlış sonuçlar elde edilebilir...
+
+        //*Örnek olarak ben alışveriş sitesinden bir ürüne baktım beğendim fiyatıda 200 TL.
+        //*Ama ben daha alışverşi tamamlamadım site admini ürünün fiyatını 300 yaptı ama benim browser ım da hala 200 gözüküyor bunun gibi örnekler veri tutarsızlığıdır.
+        #endregion
+        #region Stale & Dirty (Bayat & Kirli) Data Nedir?
+        //*Stale Data : Veri tutarsızlığına sebebiyet verebilecek güncellenmemiş yahut zamanı geçmiş olan verileri ifade etmektedir. Örneğin; bir ürünün stok durumu sıfırlandığı halde arayüz üzerinde bunu ifade eden bir güncelleme durumu söz konusu değilse işte bu stale data durumuna bir örnektir.
+
+        //*Dirty Data : Veri tutarszılığına sebebiyet verebilecek verinin hatalı yahut yanlış olduğunu ifade etmektedir. Örneğin; adı 'Ahmet' olan bir kullanıcının veritabanında 'Mehmet' olarak tutulması dirty data örneklendirmesidir.
+        #endregion
+        #region Last In Wins (Son Gelen Kazanır)
+        //*Bir veri yapısında son yapılan aksiyona göre en güncel verinin en üstte bulunmasını/varlığını korumasını ifade eden bir deyimsel terimdir.
+        #endregion
+        #region Pessimistic Lock (Kötümser Kilitleme)
+
+        //*Bir transaction sürecinde elde edilen veriler üzerinde farklı sorgularla değişiklik yapılmasını engellemek için ilgili verilerin kitlenmesini(locking) sağlayarak değişikliğe karşı direnç oluşturulmasını ifade eden bir yöntemdir.
+
+        //*Bu verilerin kilitlenmesi durumu ilgili transaction'ın commit ya da rollback edilmesi ile sınırlıdır.
+
+        #region Deadlock Nedir? ( Kilitleme Çıkmazı - Ölüm Kilitlenmesi Nedir?)
+        //*Kitlenmiş olan bir verinin veirtabanı seviyesinde meydana gelen sistemsel bir hatadan dolayı kilidinin çözülememesi yahut döngüsel olarak kilitlenme durumunun meydana gelmesini ifade eden bir terimdir.
+
+        //*Pessimistic Lock yönteminde deadlock durumunu yaşamanız bir ihtimaldir. O yüzden değerlendirlmesi gereken ve iyi düşünülerek tercih edilmesi gerken bir yaklaşımdır pessimistic lock yaklaşımı.
+        #endregion
+    
+        #region WITH (XLOCK)
+       
+        //using var transaction = await context.Database.BeginTransactionAsync();
+        //var data = await context.Persons.FromSql($"SELECT * FROM Persons WITH (XLOCK) WHERE PersonID = 5")
+        //    .ToListAsync(); //*bu veriyi elde ettiğim an transaction başlayacak ben bu transaction commit ya da rolback olana kadar bu verinin üzerinde değişiklik yapılmasını istemiyorsam burada WITH (XLOCK) kullandım.
+        //Console.WriteLine();
+        //await transaction.CommitAsync();
+        #endregion
+        #endregion
+        #region Optimistic Lock (İyimser Kilitmele)
+
+        //*Bir verinin stale olup olmadığını anlamak için herhangi bir locking işlemi olmaksızın versiyon mantığıonda çalışmamızı sağlayan yaklaşımdır.
+        //*Optimistic lock yönteminde, Pessimistic lock'da olduğu gibi veriler üzerinde tutarsızlığa mahal olabilecek değişiklikler fiziksel olarka engellenmemektedir. Yani veriler tutarsızlığı sağlayacak şekilde değiştirilebilir. 
+        //*Amma velakin Optimistic lock yaklaşımı ile bu veriler üzerindeki tutarsızlık durumunu takip edebilmek için versiyon bilgisini kullanıyoruz. Bunu da şöyle kullanıyoruz;
+        //*Her bir veriye karşılık bir versiyon bilgisi üretiliyor. Bu bilgi ister metinsel istersekte sayısal olabilir. Bu versiyon bilgisi veri üzerinde yapılan her bir değişiklik neticesinde güncellenecektir. Dolayısıyla bu güncellemeyi daha kolay bir şekilde gerçkeleştirebilmek için sayısal olmasını tercih ederiz. 
+        //*EF Core üzerinden verileri sorgularken ilgili verilerin versiyon bilgilerini de in-memory'e alıyoruz. Ardından veri üzerinde bir değişiklik yapılırsa eğer bu  inmemory'deki versiyon bilgisi ile verityabanındaki versiyon bilgisini karşılaştıroyruz. Eğer ki bu karşılaştırma doğrulanıyorsa yapılan aksiyon geçerli olacaktır, yok eğer doğrulanmıyorsa demek ki verinin değeri değişmiş anlamına gelecek yani bir tutarsızlık durumu olduğu anlaşılacaktır. İşte bu durumda bir hata fırlatılacak ve aksiyon gerçekleştirilmeyecektir.
+
+        //*EF Core Optimistic lock yaklaşımı için genetiğinde yapısal bir özellik barındırmaktadır.
+
+        #region Property Based Configuration (ConcurrencyCheck Attribute)
+        //*Verisel tutarlılığın kontrol edilmek istendiği proeprtyler ConcurrencyCheck attribute'u ile işaretlenir. Bu işaretleme neticesinde her bir entity'nin instance'ı için in-memory'de bir token değeri üretilecektir. Üretilen bu token değeri alınan aksiyon süreçlerinde EF Core tarafından doğrulacnacak ve eğer ki herhangi bir değişiklik yoksa aksiyon başarıyla sonlandırılmış olacaktır. Yok eğer transaction sürecinde ilgili veri üzerinde(ConcurrencyCheck attribute ile işaretlenmiş propertylerde) herhangi  bir değişiklik durumu söz konusuysa o taktirde üretilen token'da değiştirilecek ve haliyle doğrulama sürecinde geçerli olmayacağı anlaşılacağı için veri tutarsızlığı durumu olduğu anlaşılacak ve hata fırlatılacaktır.
+
+        //var person = await context.Persons.FindAsync(3);
+        //context.Entry(person).State = EntityState.Modified;
+        //await context.SaveChangesAsync();
+
+        #endregion
+        #region RowVersion Column
+        //*Bu yaklaşımda ise veritabanındaki her bir satıra karşılık versiyon bilgisi fiziksel olarka oluşturulmaktadır.
+        //var person = await context.Persons.FindAsync(3);
+        //context.Entry(person).State = EntityState.Modified;
+        //await context.SaveChangesAsync();
+        #endregion
+        #endregion
+
+    }
+}
+
+public class Person
+{
+    public int PersonId { get; set; }
+    //[ConcurrencyCheck] //*hangi property de kullanmak istiyorsan onlara eklemen gerek 
+    //*aşşağıda flunet api olarak da kullanılabilir sana kalmış
+    public string Name { get; set; }
+    [Timestamp]
+    public byte[] RowVersion { get; set; }
+    //*Eğer RowVersion column üzerinden tutarsılıkları kontrol edecek ise
+    //* 1. entity içinde byte[] RowVersion adında property tanımlamam gerek.
+    //* 2. Ef Core her bir satıra karşılık gelen version bilgisini tutacak olan bu kolonu Timestamp olarak işaretlemeliyiz.
+    //*flunet api üzerinden de yapabiliriz. aşşağıda
+}
+class ApplicationDbContext : DbContext
+{
+    public DbSet<Person> Persons { get; set; }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        //modelBuilder.Entity<Person>().Property(p => p.Name).IsConcurrencyToken(); //*flunet api olarakda kullanılabilir
+        modelBuilder.Entity<Person>().Property(p => p.RowVersion).IsRowVersion();//*flunet api olarakda kullanılabilir
+    }
+    readonly ILoggerFactory _loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+
+        optionsBuilder.UseSqlite("Data Source=ApplicationDB")
+            .UseLoggerFactory(_loggerFactory);
+    }
+}
