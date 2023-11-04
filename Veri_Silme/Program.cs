@@ -53,6 +53,12 @@ class Program
             
         #endregion
 
+        #region EfCore 7 Delete yeniliği
+            //*context.Person.Where(u=>u.UrunAdi>3).ExecuteDeleteAsync();  
+            //*ExecuteDelete fonksiyonu ile bulk(toplu) veri silme işlmeleri gerçekleştiriken Savechanges fonksiyonu çağırmamız gerekmemektedir.Çünkü bu fonksiyonlar adı üzerinde Execute fonskiyonlarıdır. Yani direkt veritabanına fiziksel etkide bulunuarlar.
+            //*Eğerki istiyorsanız transaction kontrolünü ele alarak bu fonksyionların işlevlerini de süreçte kontrol edebilirsiniz.
+        #endregion
+
 
     
     }

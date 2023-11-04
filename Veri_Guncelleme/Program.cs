@@ -76,6 +76,13 @@ class Program
             }
             context.SaveChangesAsync();// burada yap maliyet azalsın
 
+
+            //!EF CORE7 İLE GELEN UPDATE YENİLİĞİ (ExecuteUpdate)
+            //* await context.Urun.Where(u=>u.Id>3).ExecuteUpdateAsync(u=>u.UrunAdi, v=>v.UrunAdi+"yeni"));
+            //* await context.Urun.Where(u=>u.Id>3).ExecuteUpdateAsync(u=>u.UrunAdi, v=>$"{v.UrunAdi} yeni"));//böyle kullanırsak hata alırız $(string interpoletion)kullanmadan gerçekleştirmek önerilir.
+            //*ExecuteUpdate fonksiyonu ile bulk(toplu) veri güncelleme işlmeleri gerçekleştiriken Savechanges fonksiyonu çağırmamız gerekmemektedir.Çünkü bu fonksiyonlar adı üzerinde Execute fonskiyonlarıdır. Yani direkt veritabanına fiziksel etkide bulunuarlar.
+            //*Eğerki istiyorsanız transaction kontrolünü ele alarak bu fonksyionların işlevlerini de süreçte kontrol edebilirsiniz.
+
         #endregion
     
     
